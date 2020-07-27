@@ -1,6 +1,8 @@
 import discord
 from discord.ext import commands
 import json
+import random
+import os
 
 with open('setting.json','r',encoding='utf8')as settingfile:
     settingdata=json.load(settingfile)
@@ -12,20 +14,27 @@ bot=commands.Bot(command_prefix='!')
 async def on_ready():
     print(">> Bot is online <<")
 
-@bot.event
-async def on_member_join(member):
-    print(f'{member} join!')
-    channel=bot.get_channel(int(settingdata['welcome'])) 
-    await channel.send(f'{member}join!')
-
-@bot.event
-async def on_member_remove(member):
-    print(f'{member} leave!')
-    channel=bot.get_channel(int(settingdata['離開'])) 
-    await channel.send(f'{member}leave!')
-    
 @bot.command()
-async def ping(ctx):
-    await ctx.send(f'{round((bot.latency*1000),2)}(ms)')
+async def load(ctx,extension):
+    bot.load_extension(f'cmds.{extension}')
+    await ctx.send(f'{extension}已載入')
 
-bot.run(settingdata['token'])
+@bot.command()
+async def unload(ctx,extension):
+    bot.unload_extension(f'cmds.{extension}')
+    await ctx.send(f'{extension}已解除')
+
+@bot.command()
+async def reload(ctx,extension):
+    bot.reload_extension(f'cmds.{extension}')
+    await ctx.send(f'{extension}已更新')
+
+
+
+for filename in os.listdir('./cmds'):
+    if filename.endswith('.py'):
+        bot.load_extension(f'cmds.{filename[:-3]}')
+
+
+if __name__=="__main__":
+    bot.run(settingdata['token'])
